@@ -1,0 +1,51 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Building {
+  id         Int         @id @default(autoincrement())
+  name       String      @unique
+  slug       String      @unique
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  apartments Apartment[]
+}
+
+model Apartment {
+  id         Int        @id @default(autoincrement())
+  name       String
+  slug       String     @unique // Devient obligatoire
+  building   Building   @relation(fields: [buildingId], references: [id])
+  buildingId Int
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  inventory  Inventory?
+}
+
+model Inventory {
+  id          Int        @id @default(autoincrement())
+  apartment   Apartment  @relation(fields: [apartmentId], references: [id]) // Relation définie ici
+  apartmentId Int        @unique // Relation 1-1
+  categories  Category[]
+}
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String
+  inventory   Inventory @relation(fields: [inventoryId], references: [id])
+  inventoryId Int
+  items       Item[]
+}
+
+model Item {
+  id         Int      @id @default(autoincrement())
+  name       String
+  quantity   Int
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId Int
+}
