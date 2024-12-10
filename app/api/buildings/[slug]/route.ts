@@ -24,17 +24,25 @@ export async function GET(request: Request, { params }: { params: { slug: string
 
 export async function DELETE(request: Request, { params }: { params: { slug: string } }) {
   try {
-    const { slug } = params; // Extraction correcte du slug
+    const { slug } = params;
 
     const building = await prisma.building.findUnique({
-      where: { slug }, // Utilisation correcte du champ slug
+      where: { slug },
+      include: { apartments: true }, // Inclure les appartements pour vérifier s'il y en a
     });
 
     if (!building) {
       return NextResponse.json({ error: "Building not found" }, { status: 404 });
     }
 
-    // Supprime le bâtiment
+    if (building.apartments.length > 0) {
+      // Retourner un message clair si des logements existent encore
+      return NextResponse.json(
+        { error: "Vous devez supprimer tous les logements avant de supprimer ce bâtiment." },
+        { status: 400 }
+      );
+    }
+
     await prisma.building.delete({
       where: { slug },
     });
@@ -42,6 +50,9 @@ export async function DELETE(request: Request, { params }: { params: { slug: str
     return NextResponse.json({ message: "Building deleted successfully" });
   } catch (error) {
     console.error("Error deleting building:", error);
-    return NextResponse.json({ error: "Failed to delete building" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Une erreur inattendue s'est produite lors de la suppression du bâtiment." },
+      { status: 500 }
+    );
   }
 }

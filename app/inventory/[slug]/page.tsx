@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { AddCategory } from "@/components/AddCategory";
 import { AddItem } from "@/components/AddItem";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface Apartment {
   id: number;
@@ -19,7 +20,7 @@ export default function InventoryPage({ params }: { params: Promise<{ slug: stri
   const [apartmentSlug, setApartmentSlug] = useState<string | null>(null);
   const [deletingCategoryId, setDeletingCategoryId] = useState<number | null>(null);
   const [items, setItems] = useState<{ [key: number]: any[] }>({});
-  const router = useRouter(); // Pour la navigation
+  const router = useRouter();
 
   // Résolvez `params.slug`
   useEffect(() => {
@@ -53,7 +54,7 @@ export default function InventoryPage({ params }: { params: Promise<{ slug: stri
       const response = await fetch(`/api/apartments/${slug}/inventory`);
       const data = await response.json();
       setCategories(data.categories || []);
-      data.categories.forEach((category: any) => fetchItems(category.id)); // Charger les items pour chaque catégorie
+      data.categories.forEach((category: any) => fetchItems(category.id));
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
@@ -65,16 +66,31 @@ export default function InventoryPage({ params }: { params: Promise<{ slug: stri
       const response = await fetch(`/api/categories/${categoryId}`, {
         method: "DELETE",
       });
-
+  
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        console.warn("Response is not JSON:", jsonError);
+        data = null;
+      }
+  
       if (!response.ok) {
-        throw new Error("Failed to delete category");
+        if (data?.error) {
+          toast.error(data.error); // Affiche le message d'erreur spécifique
+        } else {
+          toast.error("Impossible de supprimer la catégorie.");
+        }
+        return;
       }
-
+  
       if (apartmentSlug) {
-        fetchCategories(apartmentSlug);
+        fetchCategories(apartmentSlug); // Rafraîchit les catégories après suppression
       }
+      toast.success(data?.message || "Catégorie supprimée avec succès !");
     } catch (error) {
       console.error("Error deleting category:", error);
+      toast.error("Une erreur inattendue s'est produite lors de la suppression.");
     } finally {
       setDeletingCategoryId(null);
     }
@@ -100,9 +116,11 @@ export default function InventoryPage({ params }: { params: Promise<{ slug: stri
         throw new Error("Failed to delete item");
       }
 
-      fetchItems(categoryId); // Rafraîchir les items après suppression
+      toast.success("Item supprimé avec succès !");
+      fetchItems(categoryId);
     } catch (error) {
       console.error("Error deleting item:", error);
+      toast.error("Impossible de supprimer l'item.");
     }
   };
 
@@ -118,44 +136,39 @@ export default function InventoryPage({ params }: { params: Promise<{ slug: stri
         throw new Error("Failed to update item");
       }
 
-      fetchItems(categoryId); // Rafraîchir les items après modification
+      toast.success("Item mis à jour avec succès !");
+      fetchItems(categoryId);
     } catch (error) {
       console.error("Error updating item:", error);
+      toast.error("Impossible de mettre à jour l'item.");
     }
   };
 
   return (
-    <main className="p-6 bg-gray-50 min-h-screen flex flex-col gap-6">
+    <main className="p-6 bg-gray-50 min-h-screen flex gap-6 justify-center">
+      <div className="max-w-7xl w-full p-6">
+
       <div className="flex justify-between items-center mb-6 px-8">
-  {/* Bouton de retour à gauche */}
-  <button
-    onClick={() => router.back()}
-    className="bg-[#b39625] text-white px-4 py-2 rounded"
-  >
-    Retour
-  </button>
-
-  {/* Texte centré */}
-  <h1 className="text-3xl font-bold text-center flex-grow mx-4">
-    {apartment
-      ? `Inventaire du logement ${apartment.name} du bâtiment ${apartment.building.name}`
-      : "Chargement..."}
-  </h1>
-
-  {/* Logo à droite */}
-  <img
-    src="/assets/logo.png"
-    alt="Logo"
-    className="h-20 w-auto object-contain"
-  />
-</div>
+        <button
+          onClick={() => router.back()}
+          className="bg-[#b39625] text-white px-4 py-2 rounded"
+          >
+          Retour
+        </button>
+        <h1 className="text-3xl font-bold text-center flex-grow mx-4">
+          {apartment
+            ? `Inventaire du logement ${apartment.name} du bâtiment ${apartment.building.name}`
+            : "Chargement..."}
+        </h1>
+        <img src="/assets/logo.png" alt="Logo" className="h-20 w-auto object-contain" />
+      </div>
       {apartmentSlug && (
         <AddCategory
           apartmentSlug={apartmentSlug}
           onCategoryAdded={() => fetchCategories(apartmentSlug)}
-        />
+          />
       )}
-      <ul className="space-y-4">
+      <ul className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 gap-6">
         {categories.map((category) => (
           <li key={category.id} className="bg-white p-4 rounded shadow">
             <div className="flex justify-between items-center">
@@ -165,18 +178,18 @@ export default function InventoryPage({ params }: { params: Promise<{ slug: stri
                 className={`bg-red-500 text-white px-2 py-1 rounded ${
                   deletingCategoryId === category.id ? "opacity-50 pointer-events-none" : ""
                 }`}
-              >
+                >
                 {deletingCategoryId === category.id ? "Suppression..." : "Supprimer"}
               </button>
             </div>
-            <AddItem
-              categoryId={category.id}
-              onItemAdded={() => fetchItems(category.id)}
-            />
+            <AddItem categoryId={category.id} onItemAdded={() => fetchItems(category.id)} />
             <ul className="mt-2 space-y-2">
               {items[category.id]?.length > 0 ? (
                 items[category.id].map((item: any) => (
-                  <li key={item.id} className="flex justify-between items-center p-2 bg-gray-100 rounded">
+                  <li
+                  key={item.id}
+                  className="flex justify-between items-center p-2 bg-gray-100 rounded"
+                  >
                     <span>
                       {item.name} - {item.quantity}
                     </span>
@@ -186,7 +199,7 @@ export default function InventoryPage({ params }: { params: Promise<{ slug: stri
                           updateItem(item.id, category.id, item.name, item.quantity + 1)
                         }
                         className="bg-green-500 text-white px-2 py-1 rounded"
-                      >
+                        >
                         +1
                       </button>
                       <button
@@ -194,13 +207,13 @@ export default function InventoryPage({ params }: { params: Promise<{ slug: stri
                           updateItem(item.id, category.id, item.name, item.quantity - 1)
                         }
                         className="bg-yellow-500 text-white px-2 py-1 rounded"
-                      >
+                        >
                         -1
                       </button>
                       <button
                         onClick={() => deleteItem(item.id, category.id)}
                         className="bg-red-500 text-white px-2 py-1 rounded"
-                      >
+                        >
                         Supprimer
                       </button>
                     </div>
@@ -213,6 +226,7 @@ export default function InventoryPage({ params }: { params: Promise<{ slug: stri
           </li>
         ))}
       </ul>
+        </div>
     </main>
   );
 }

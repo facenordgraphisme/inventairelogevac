@@ -21,34 +21,57 @@ export async function GET(request: Request, { params }: { params: { slug: string
 
 export async function DELETE(request: Request, { params }: { params: { slug: string } }) {
   try {
-    const apartmentSlug = params.slug; // Utilise le slug comme clé
+    const apartmentSlug = params.slug;
 
     if (!apartmentSlug) {
       return NextResponse.json({ error: "Invalid apartment slug" }, { status: 400 });
     }
 
-    // Trouver l'appartement via le slug
     const apartment = await prisma.apartment.findUnique({
       where: { slug: apartmentSlug },
+      include: {
+        inventory: {
+          include: {
+            categories: {
+              include: {
+                items: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!apartment) {
       return NextResponse.json({ error: "Apartment not found" }, { status: 404 });
     }
 
-    // Supprimer l'inventaire lié à l'appartement
-    await prisma.inventory.deleteMany({
-      where: { apartmentId: apartment.id },
-    });
+    // Vérifie s'il y a des catégories ou des items associés
+    if (apartment.inventory?.categories?.some((category) => category.items.length > 0)) {
+      return NextResponse.json(
+        { error: "Vous devez supprimer toutes les catégories et les items associés avant de supprimer ce logement." },
+        { status: 400 }
+      );
+    }
 
-    // Supprimer l'appartement
+    // Supprime l'inventaire lié à l'appartement
+    if (apartment.inventory) {
+      await prisma.inventory.delete({
+        where: { id: apartment.inventory.id },
+      });
+    }
+
+    // Supprime l'appartement
     await prisma.apartment.delete({
       where: { slug: apartmentSlug },
     });
 
-    return NextResponse.json({ message: "Appartement supprimé avec succès" });
+    return NextResponse.json({ message: "Appartement supprimé avec succès." });
   } catch (error) {
     console.error("Error deleting apartment:", error);
-    return NextResponse.json({ error: "Failed to delete apartment" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Une erreur inattendue s'est produite lors de la suppression." },
+      { status: 500 }
+    );
   }
 }

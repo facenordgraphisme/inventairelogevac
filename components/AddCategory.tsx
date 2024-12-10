@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 
 export function AddCategory({
   apartmentSlug,
@@ -13,12 +14,12 @@ export function AddCategory({
 
   const addCategory = async () => {
     if (!apartmentSlug) {
-      console.error("Apartment slug is missing.");
+      toast.error("Le slug de l'appartement est manquant.");
       return;
     }
 
     if (!categoryName.trim()) {
-      console.error("Category name cannot be empty.");
+      toast.error("Le nom de la catégorie ne peut pas être vide.");
       return;
     }
 
@@ -30,13 +31,15 @@ export function AddCategory({
       });
 
       if (!response.ok) {
-        throw new Error("Failed to add category");
+        throw new Error("Échec de l'ajout de la catégorie.");
       }
 
+      toast.success("Catégorie ajoutée avec succès !");
       setCategoryName(""); // Réinitialiser le champ
       onCategoryAdded(); // Rafraîchir les catégories
     } catch (error) {
       console.error("Error adding category:", error);
+      toast.error("Une erreur inattendue s'est produite.");
     }
   };
 

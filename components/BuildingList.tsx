@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 
 export function BuildingList({ buildings, onBuildingAdded, onBuildingDeleted }: any) {
   const [newBuildingName, setNewBuildingName] = useState("");
@@ -13,25 +14,33 @@ export function BuildingList({ buildings, onBuildingAdded, onBuildingDeleted }: 
     });
     setNewBuildingName("");
     onBuildingAdded();
+    toast.success("Bâtiment ajouté avec succès !");
   };
 
   const deleteBuilding = async (buildingSlug: string) => {
     try {
       const response = await fetch(`/api/buildings/${buildingSlug}`, { method: "DELETE" });
-  
+
       if (!response.ok) {
-        console.error("Failed to delete building:", response.statusText);
+        const errorData = await response.json(); // Parse le JSON de l'erreur
+        if (errorData.error) {
+          toast.error(errorData.error); // Afficher le message d'erreur spécifique
+        } else {
+          toast.error("Impossible de supprimer le bâtiment.");
+        }
         return;
       }
-  
+
       onBuildingDeleted(); // Rafraîchit la liste après suppression
+      toast.success("Bâtiment supprimé avec succès !");
     } catch (error) {
       console.error("Error deleting building:", error);
+      toast.error("Une erreur inattendue s'est produite.");
     }
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center gap-4">
         <input
           type="text"
@@ -47,24 +56,26 @@ export function BuildingList({ buildings, onBuildingAdded, onBuildingDeleted }: 
           Ajouter
         </button>
       </div>
-      <ul className="space-y-2">
+      <ul className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {buildings.map((building: any) => (
-          <li key={building.id} className="bg-white p-4 rounded shadow flex justify-between items-center">
+          <li
+            key={building.id}
+            className="bg-white p-4 rounded shadow flex flex-col justify-between items-center"
+          >
             <span className="text-lg font-semibold">{building.name}</span>
-            <div className="flex gap-2">
-            <a
-  href={`/building/${building.name}`} // Utiliser le `name` au lieu de `id`
-  className="bg-[#b39625] text-white px-4 py-2 rounded"
->
-  Voir les logements
-</a>
-
-<button
-  onClick={() => deleteBuilding(building.slug)} // Utilisation correcte du slug
-  className="border-2 border-red-500 text-black hover:text-white transition duration-300 font-medium px-4 py-2 rounded hover:bg-red-600"
->
-  Supprimer
-</button>
+            <div className="flex gap-2 mt-4">
+              <a
+                href={`/building/${building.slug}`}
+                className="bg-[#b39625] text-white px-4 py-2 rounded"
+              >
+                Voir les logements
+              </a>
+              <button
+                onClick={() => deleteBuilding(building.slug)}
+                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+              >
+                Supprimer
+              </button>
             </div>
           </li>
         ))}

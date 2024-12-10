@@ -74,12 +74,13 @@ export default function BuildingPage({ params }: { params: Promise<{ slug: strin
   };
 
   return (
-    <main className="p-6 bg-gray-50 min-h-screen">
+    <main className="p-6 bg-gray-50 min-h-screen flex justify-center">
+      <div className="max-w-7xl w-full p-6">
       <div className="flex justify-between items-center mb-6 px-8">
         <button
           onClick={() => router.back()}
           className="bg-[#b39625] text-white px-4 py-2 rounded"
-        >
+          >
           Retour
         </button>
         <h1 className="text-3xl font-bold text-center flex-grow">
@@ -89,16 +90,17 @@ export default function BuildingPage({ params }: { params: Promise<{ slug: strin
           src="/assets/logo.png"
           alt="Logo"
           className="h-20 w-auto object-contain"
-        />
+          />
       </div>
       {building && (
         <ApartmentList
-          buildingSlug={buildingSlug} // Assurez-vous que cette valeur est correcte
-          apartments={apartments}
-          onApartmentAdded={handleApartmentAdded}
-          onApartmentDeleted={handleApartmentDeleted}
+        buildingSlug={buildingSlug} // Assurez-vous que cette valeur est correcte
+        apartments={apartments}
+        onApartmentAdded={handleApartmentAdded}
+        onApartmentDeleted={handleApartmentDeleted}
         />
       )}
+      </div>
     </main>
   );
 }
