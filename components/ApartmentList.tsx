@@ -10,6 +10,8 @@ export function ApartmentList({
   onApartmentAdded,
 }: any) {
   const [newApartmentName, setNewApartmentName] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortOption, setSortOption] = useState("number"); // Par défaut : tri par numéro
 
   // Ajouter un appartement
   const addApartment = async () => {
@@ -39,34 +41,44 @@ export function ApartmentList({
       const response = await fetch(`/api/apartments/${apartmentSlug}`, {
         method: "DELETE",
       });
-  
-      let data;
-      try {
-        data = await response.json(); // Essaie de lire le JSON
-      } catch (jsonError) {
-        console.warn("Response is not JSON:", jsonError);
-        data = null;
-      }
-  
+
       if (!response.ok) {
-        if (data?.error) {
-          toast.error(data.error); // Affiche le message d'erreur spécifique
+        const errorData = await response.json();
+        if (errorData.error) {
+          toast.error(errorData.error);
         } else {
-          toast.error("Impossible de supprimer le logement, vous devez d'abord supprimer les éléments de l'inventaire.");
+          toast.error("Impossible de supprimer le logement.");
         }
         return;
       }
-  
+
       if (onApartmentDeleted) onApartmentDeleted();
-      toast.success(data?.message || "Logement supprimé avec succès !");
+      toast.success("Logement supprimé avec succès !");
     } catch (error) {
       console.error("Error deleting apartment:", error);
       toast.error("Une erreur inattendue s'est produite lors de la suppression.");
     }
   };
 
+  // Trier les appartements
+  const sortedApartments = [...apartments].sort((a: any, b: any) => {
+    if (sortOption === "number") {
+      // Compare les numéros en tant que nombres
+      return parseInt(a.name, 10) - parseInt(b.name, 10);
+    } else if (sortOption === "createdAt") {
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    }
+    return 0;
+  });
+
+  // Filtrer les appartements par recherche
+  const filteredApartments = sortedApartments.filter((apartment: any) =>
+    apartment.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="space-y-6">
+      {/* Ajouter un appartement */}
       <div className="flex items-center gap-4">
         <input
           type="text"
@@ -82,9 +94,30 @@ export function ApartmentList({
           Ajouter
         </button>
       </div>
+
+      {/* Barre de recherche et tri */}
+      <div className="flex items-center justify-between gap-4">
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Rechercher un logement"
+          className="border rounded px-4 py-2 flex-grow"
+        />
+        <select
+          value={sortOption}
+          onChange={(e) => setSortOption(e.target.value)}
+          className="border rounded px-4 py-2"
+        >
+          <option value="number">Trier par numéro</option>
+          <option value="createdAt">Trier par date de création</option>
+        </select>
+      </div>
+
+      {/* Liste des logements */}
       <ul className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {Array.isArray(apartments) && apartments.length > 0 ? (
-          apartments.map((apartment: any) => (
+        {filteredApartments.length > 0 ? (
+          filteredApartments.map((apartment: any) => (
             <li
               key={apartment.id}
               className="bg-white p-4 rounded shadow flex flex-col justify-between items-center"
@@ -107,7 +140,7 @@ export function ApartmentList({
             </li>
           ))
         ) : (
-          <li className="text-gray-500">Aucun logement disponible</li>
+          <li className="text-gray-500 text-center">Aucun logement trouvé</li>
         )}
       </ul>
     </div>

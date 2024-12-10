@@ -1,25 +1,21 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const name = searchParams.get("name"); // Extraire `name` depuis les paramètres
-
-  if (name) {
-    const building = await prisma.building.findUnique({
-      where: { name },
+export async function GET() {
+  try {
+    const buildings = await prisma.building.findMany({
+      include: {
+        _count: {
+          select: { apartments: true }, // Inclure le nombre d'appartements
+        },
+      },
     });
 
-    if (!building) {
-      return NextResponse.json({ error: "Building not found" }, { status: 404 });
-    }
-
-    return NextResponse.json(building);
+    return NextResponse.json(buildings);
+  } catch (error) {
+    console.error("Error fetching buildings:", error);
+    return NextResponse.json({ error: "Failed to fetch buildings" }, { status: 500 });
   }
-
-  // Si pas de `name`, retourner tous les bâtiments
-  const buildings = await prisma.building.findMany();
-  return NextResponse.json(buildings);
 }
 // POST - Ajouter un nouveau bâtiment
 export async function POST(request: Request) {
