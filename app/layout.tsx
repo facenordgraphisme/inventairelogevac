@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { DM_Sans } from 'next/font/google';
 import { Toaster } from "sonner";
+import { SessionProviderWrapper } from "@/components/SessionProviderWrapper";
+import Navbar from "@/components/Navbar";
 
 const dmSans = DM_Sans({
   subsets: ['latin']
@@ -21,9 +23,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${dmSans.className} bg-[#Fff]  min-h-screen text-black antialiased max-w-screen overflow-x-hidden scroll-smooth`}
+        className={`${dmSans.className} bg-gray-50  min-h-screen text-black antialiased max-w-screen overflow-x-hidden scroll-smooth`}
       >
-        {children}
+        <SessionProviderWrapper>
+          <Navbar/>
+          {children}
+        </SessionProviderWrapper>
         <Toaster position="bottom-right" duration={3000} />
       </body>
     </html>

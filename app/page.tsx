@@ -2,39 +2,55 @@
 
 import { useEffect, useState } from "react";
 import { BuildingList } from "@/components/BuildingList";
-// import { Toaster } from 'sonner';
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [buildings, setBuildings] = useState([]);
 
+  useEffect(() => {
+    if (!session && status !== "loading") {
+      router.push("/auth/signin");
+    }
+  }, [session, status, router]);
+
   const fetchBuildings = async () => {
-    const response = await fetch("/api/buildings");
-    const data = await response.json();
-    setBuildings(data);
+    try {
+      const response = await fetch("/api/buildings");
+      if (!response.ok) {
+        throw new Error("Failed to fetch buildings");
+      }
+      const data = await response.json();
+      setBuildings(data);
+    } catch (error) {
+      console.error("Error fetching buildings:", error);
+    }
   };
 
   useEffect(() => {
-    fetchBuildings();
-  }, []);
+    if (session) {
+      fetchBuildings();
+    }
+  }, [session]);
+
+  if (status === "loading" || !session) {
+    return <p>Chargement...</p>;
+  }
 
   return (
     <main className="bg-gray-50 min-h-screen flex justify-center">
       <div className="max-w-7xl w-full p-6">
-        <div className="flex justify-between items-center mb-6 px-8">
-          <p className="text-md md:text-xl font-bold">Inventaire Logevac</p>
+        <div className="flex items-center mb-6 px-8">
           <h1 className="text-xl md:text-3xl font-bold text-center flex-grow">
             Gestion des Bâtiments
           </h1>
-          <img
-            src="/assets/logo.png"
-            alt="Logo"
-            className="h-12 md:h-20 w-auto object-contain"
-          />
         </div>
         <BuildingList
           buildings={buildings}
           onBuildingAdded={fetchBuildings}
-          onBuildingDeleted={fetchBuildings} // Met à jour la liste après suppression
+          onBuildingDeleted={fetchBuildings}
         />
       </div>
     </main>

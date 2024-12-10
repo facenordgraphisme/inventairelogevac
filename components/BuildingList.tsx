@@ -3,12 +3,17 @@
 import { useState } from "react";
 import { toast } from "sonner";
 
-export function BuildingList({ buildings, onBuildingAdded, onBuildingDeleted }: any) {
+export function BuildingList({ buildings = [], onBuildingAdded, onBuildingDeleted }: any) {
   const [newBuildingName, setNewBuildingName] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOption, setSortOption] = useState("name");
 
   const addBuilding = async () => {
+    if (!newBuildingName.trim()) {
+      toast.error("Le nom du bâtiment est requis.");
+      return;
+    }
+
     try {
       const response = await fetch("/api/buildings", {
         method: "POST",
@@ -53,14 +58,16 @@ export function BuildingList({ buildings, onBuildingAdded, onBuildingDeleted }: 
     }
   };
 
-  const sortedBuildings = [...buildings].sort((a: any, b: any) => {
-    if (sortOption === "name") {
-      return a.name.localeCompare(b.name);
-    } else if (sortOption === "createdAt") {
-      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-    }
-    return 0;
-  });
+  const sortedBuildings = Array.isArray(buildings)
+    ? [...buildings].sort((a: any, b: any) => {
+        if (sortOption === "name") {
+          return a.name.localeCompare(b.name);
+        } else if (sortOption === "createdAt") {
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        }
+        return 0;
+      })
+    : [];
 
   const filteredBuildings = sortedBuildings.filter((building: any) =>
     building.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -68,23 +75,42 @@ export function BuildingList({ buildings, onBuildingAdded, onBuildingDeleted }: 
 
   return (
     <div className="space-y-6">
-      {/* Barre de recherche et tri */}
+      <p className="text-lg font-semibold">Rechercher un batiment</p>
+      {/* Barre de recherche, tri et création */}
       <div className="flex items-center justify-between gap-4">
         <input
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Rechercher un bâtiment"
-          className="border rounded px-4 py-2 flex-grow"
+          className="border rounded-xl px-4 py-2 flex-grow"
         />
         <select
           value={sortOption}
           onChange={(e) => setSortOption(e.target.value)}
-          className="border rounded px-4 py-2"
+          className="border rounded-xl px-4 py-2"
         >
           <option value="name">Trier par nom</option>
           <option value="createdAt">Trier par date de création</option>
         </select>
+      </div>
+
+      {/* Formulaire de création de bâtiment */}
+      <p className="text-lg font-semibold">Créer un nouveau batiment</p>
+      <div className="flex items-center gap-4">
+        <input
+          type="text"
+          value={newBuildingName}
+          onChange={(e) => setNewBuildingName(e.target.value)}
+          placeholder="Nom du bâtiment"
+          className="border rounded-xl px-4 py-2 flex-grow"
+        />
+        <button
+          onClick={addBuilding}
+          className="bg-[#b39625] text-white px-4 py-2 rounded-full hover:bg-[#a3851f] transition duration-300"
+        >
+          Ajouter un bâtiment
+        </button>
       </div>
 
       {/* Liste des bâtiments */}
@@ -93,21 +119,22 @@ export function BuildingList({ buildings, onBuildingAdded, onBuildingDeleted }: 
           {filteredBuildings.map((building: any) => (
             <li
               key={building.id}
-              className="bg-white p-4 rounded shadow flex flex-col justify-between items-center"
+              className="bg-white p-4 rounded shadow-xl flex flex-col justify-between items-center border border-gray-200"
             >
               <span className="text-lg font-semibold">
-                {building.name} <span className="text-sm font-medium">({building._count.apartments} logements)</span>
+                {building.name}{" "}
+                <span className="text-sm font-medium">({building._count.apartments} logements)</span>
               </span>
               <div className="flex gap-2 mt-4">
                 <a
                   href={`/building/${building.slug}`}
-                  className="bg-[#b39625] text-white px-4 py-2 rounded"
+                  className="bg-white border border-[#b39625] hover:bg-[#b39625] text-[#b39625] hover:text-white px-4 py-2 rounded-full transition duration-300 ease-in-out"
                 >
                   Voir les logements
                 </a>
                 <button
                   onClick={() => deleteBuilding(building.slug)}
-                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                  className="bg-white border border-red-600 text-red-600 px-4 py-2 rounded-full hover:bg-red-600 hover:text-white transition duration-300 ease-in-out"
                 >
                   Supprimer
                 </button>
@@ -121,4 +148,3 @@ export function BuildingList({ buildings, onBuildingAdded, onBuildingDeleted }: 
     </div>
   );
 }
-

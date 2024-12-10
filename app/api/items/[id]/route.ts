@@ -50,3 +50,4 @@ export async function DELETE(_request: Request, { params }: { params: { id: stri
     return NextResponse.json({ error: "Failed to delete item" }, { status: 500 });
   }
 }
+

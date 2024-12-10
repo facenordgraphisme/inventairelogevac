@@ -151,7 +151,7 @@ export default function InventoryPage({ params }: { params: Promise<{ slug: stri
       <div className="flex justify-between items-center mb-6 px-8">
         <button
           onClick={() => router.back()}
-          className="bg-[#b39625] text-white px-4 py-2 rounded"
+          className="bg-[#b39625] text-white px-4 py-2 rounded-full shadow-xl"
           >
           Retour
         </button>
@@ -175,7 +175,7 @@ export default function InventoryPage({ params }: { params: Promise<{ slug: stri
               <h3 className="text-lg font-semibold">{category.name}</h3>
               <button
                 onClick={() => deleteCategory(category.id)}
-                className={`bg-red-500 text-white px-2 py-1 rounded ${
+                className={`bg-white border border-red-600 text-red-600 px-4 py-2 rounded-full hover:bg-red-600 hover:text-white transition duration-300 ease-in-out ${
                   deletingCategoryId === category.id ? "opacity-50 pointer-events-none" : ""
                 }`}
                 >
@@ -198,7 +198,7 @@ export default function InventoryPage({ params }: { params: Promise<{ slug: stri
                         onClick={() =>
                           updateItem(item.id, category.id, item.name, item.quantity + 1)
                         }
-                        className="bg-green-500 text-white px-2 py-1 rounded"
+                        className="border border-green-500 text-black font-semibold px-3 py-1 rounded-full"
                         >
                         +1
                       </button>
@@ -206,13 +206,13 @@ export default function InventoryPage({ params }: { params: Promise<{ slug: stri
                         onClick={() =>
                           updateItem(item.id, category.id, item.name, item.quantity - 1)
                         }
-                        className="bg-yellow-500 text-white px-2 py-1 rounded"
+                        className="border border-yellow-500 text-black font-semibold px-3 py-1 rounded-full"
                         >
                         -1
                       </button>
                       <button
                         onClick={() => deleteItem(item.id, category.id)}
-                        className="bg-red-500 text-white px-2 py-1 rounded"
+                        className="bg-white border border-red-600 text-red-600 px-3 py-1 rounded-full hover:bg-red-600 hover:text-white transition duration-300 ease-in-out"
                         >
                         Supprimer
                       </button>

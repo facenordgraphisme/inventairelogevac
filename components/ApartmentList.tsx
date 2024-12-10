@@ -78,40 +78,41 @@ export function ApartmentList({
 
   return (
     <div className="space-y-6">
-      {/* Ajouter un appartement */}
-      <div className="flex items-center gap-4">
-        <input
-          type="text"
-          value={newApartmentName}
-          onChange={(e) => setNewApartmentName(e.target.value)}
-          placeholder="Nom du logement"
-          className="border rounded px-4 py-2 flex-grow"
-        />
-        <button
-          onClick={addApartment}
-          className="bg-[#b39625] text-white px-4 py-2 rounded"
-        >
-          Ajouter
-        </button>
-      </div>
-
-      {/* Barre de recherche et tri */}
+            {/* Barre de recherche et tri */}
+      <p className="text-lg font-semibold">Rechercher un logement</p>
       <div className="flex items-center justify-between gap-4">
         <input
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Rechercher un logement"
-          className="border rounded px-4 py-2 flex-grow"
+          className="border rounded-xl px-4 py-2 flex-grow"
         />
         <select
           value={sortOption}
           onChange={(e) => setSortOption(e.target.value)}
-          className="border rounded px-4 py-2"
+          className="border rounded-xl px-4 py-2"
         >
           <option value="number">Trier par numéro</option>
           <option value="createdAt">Trier par date de création</option>
         </select>
+      </div>
+      {/* Ajouter un appartement */}
+      <p className="text-lg font-semibold">Créer un nouveau logement</p>
+      <div className="flex items-center gap-4">
+        <input
+          type="text"
+          value={newApartmentName}
+          onChange={(e) => setNewApartmentName(e.target.value)}
+          placeholder="Nom du logement"
+          className="border rounded-xl px-4 py-2 flex-grow"
+        />
+        <button
+          onClick={addApartment}
+          className="bg-[#b39625] text-white px-4 py-2 rounded-full"
+        >
+          Ajouter
+        </button>
       </div>
 
       {/* Liste des logements */}
@@ -120,19 +121,19 @@ export function ApartmentList({
           filteredApartments.map((apartment: any) => (
             <li
               key={apartment.id}
-              className="bg-white p-4 rounded shadow flex flex-col justify-between items-center"
+              className="bg-white p-4 rounded shadow-xl flex flex-col justify-between items-center border border-gray-200"
             >
               <span className="text-lg font-semibold">{apartment.name}</span>
               <div className="flex gap-2 mt-4">
                 <a
                   href={`/inventory/${apartment.slug}`}
-                  className="bg-[#b39625] text-white px-4 py-2 rounded"
+                  className="bg-white border border-[#b39625] hover:bg-[#b39625] text-[#b39625] hover:text-white px-4 py-2 rounded-full transition duration-300 ease-in-out"
                 >
                   Voir l'inventaire
                 </a>
                 <button
                   onClick={() => deleteApartment(apartment.slug)}
-                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                  className="bg-white border border-red-600 text-red-600 px-4 py-2 rounded-full hover:bg-red-600 hover:text-white transition duration-300 ease-in-out"
                 >
                   Supprimer
                 </button>

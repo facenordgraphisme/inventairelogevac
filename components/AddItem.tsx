@@ -53,7 +53,7 @@ export function AddItem({
         value={itemName}
         onChange={(e) => setItemName(e.target.value)}
         placeholder="Nom de l'item"
-        className="border rounded px-2 py-1 flex-grow"
+        className="border rounded-xl px-2 py-1 flex-grow"
       />
 
       {/* Input pour la quantité avec un label */}
@@ -68,14 +68,14 @@ export function AddItem({
           onChange={(e) => setItemQuantity(Number(e.target.value))}
           placeholder="Quantité"
           min="1"
-          className="border rounded px-2 py-1 w-20"
+          className="border rounded-xl px-2 py-1 w-20"
         />
       </div>
 
       {/* Bouton Ajouter */}
       <button
         onClick={addItem}
-        className="bg-[#b39625] text-white px-4 py-2 rounded"
+        className="bg-[#b39625] text-white px-4 py-2 rounded-full"
       >
         Ajouter
       </button>

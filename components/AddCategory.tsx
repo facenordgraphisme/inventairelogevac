@@ -50,11 +50,11 @@ export function AddCategory({
         value={categoryName}
         onChange={(e) => setCategoryName(e.target.value)}
         placeholder="Nom de la catégorie"
-        className="border rounded px-2 py-1 flex-grow"
+        className="border rounded-xl px-2 py-1 flex-grow"
       />
       <button
         onClick={addCategory}
-        className="bg-[#b39625] text-white px-4 py-2 rounded"
+        className="bg-[#b39625] text-white px-4 py-2 rounded-full"
       >
         Ajouter
       </button>
