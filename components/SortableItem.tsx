@@ -1,11 +1,18 @@
-"use client";
-
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-export function SortableItem({ id, item }: { id: number; item: any }) {
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({ id });
+export function SortableItem({
+  id,
+  children,
+  name,
+  quantity,
+}: {
+  id: number;
+  children?: React.ReactNode;
+  name: string;
+  quantity: number;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -13,16 +20,22 @@ export function SortableItem({ id, item }: { id: number; item: any }) {
   };
 
   return (
-    <li
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      className="bg-gray-100 p-4 rounded shadow flex justify-between items-center"
-    >
-      <span>
-        {item.name} - {item.quantity}
-      </span>
+    <li className="flex justify-between items-center p-2 bg-gray-100 rounded">
+      {/* Zone Drag-and-Drop */}
+      <div
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
+        className="cursor-move flex-grow"
+      >
+        {name} - {quantity}
+      </div>
+
+      {/* Zone des boutons */}
+      <div className="flex gap-2">
+        {children}
+      </div>
     </li>
   );
 }

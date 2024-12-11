@@ -77,18 +77,18 @@ export function BuildingList({ buildings = [], onBuildingAdded, onBuildingDelete
     <div className="space-y-6">
       <p className="text-lg font-semibold">Rechercher un batiment</p>
       {/* Barre de recherche, tri et création */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <input
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Rechercher un bâtiment"
-          className="border rounded-xl px-4 py-2 flex-grow"
+          className="border rounded-xl px-4 py-2 flex-grow w-full"
         />
         <select
           value={sortOption}
           onChange={(e) => setSortOption(e.target.value)}
-          className="border rounded-xl px-4 py-2"
+          className="border rounded-xl px-4 py-2 w-full"
         >
           <option value="name">Trier par nom</option>
           <option value="createdAt">Trier par date de création</option>
@@ -109,7 +109,7 @@ export function BuildingList({ buildings = [], onBuildingAdded, onBuildingDelete
           onClick={addBuilding}
           className="bg-[#b39625] text-white px-4 py-2 rounded-full hover:bg-[#a3851f] transition duration-300"
         >
-          Ajouter un bâtiment
+          Créer
         </button>
       </div>
 

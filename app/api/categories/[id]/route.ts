@@ -42,3 +42,29 @@ export async function DELETE(_request: Request, { params }: { params: { id: stri
     );
   }
 }
+
+export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+  try {
+    const categoryId = parseInt(params.id);
+
+    if (isNaN(categoryId)) {
+      return NextResponse.json({ error: "Invalid category ID" }, { status: 400 });
+    }
+
+    const { name } = await request.json();
+
+    if (!name || name.trim() === "") {
+      return NextResponse.json({ error: "Category name is required" }, { status: 400 });
+    }
+
+    const updatedCategory = await prisma.category.update({
+      where: { id: categoryId },
+      data: { name },
+    });
+
+    return NextResponse.json(updatedCategory);
+  } catch (error) {
+    console.error("Error updating category name:", error);
+    return NextResponse.json({ error: "Failed to update category name" }, { status: 500 });
+  }
+}

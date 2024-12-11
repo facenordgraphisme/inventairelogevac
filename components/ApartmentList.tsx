@@ -80,7 +80,7 @@ export function ApartmentList({
     <div className="space-y-6">
             {/* Barre de recherche et tri */}
       <p className="text-lg font-semibold">Rechercher un logement</p>
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-4 flex-col sm:flex-row">
         <input
           type="text"
           value={searchTerm}
@@ -111,7 +111,7 @@ export function ApartmentList({
           onClick={addApartment}
           className="bg-[#b39625] text-white px-4 py-2 rounded-full"
         >
-          Ajouter
+          Créer
         </button>
       </div>
 

@@ -44,20 +44,23 @@ export function AddCategory({
   };
 
   return (
-    <div className="flex gap-4 mb-4">
-      <input
-        type="text"
-        value={categoryName}
-        onChange={(e) => setCategoryName(e.target.value)}
-        placeholder="Nom de la catégorie"
-        className="border rounded-xl px-2 py-1 flex-grow"
-      />
-      <button
-        onClick={addCategory}
-        className="bg-[#b39625] text-white px-4 py-2 rounded-full"
-      >
-        Ajouter
-      </button>
+    <div>
+      <p className="text-lg font-semibold pb-6">Créer une catégorie</p>
+      <div className="flex gap-4 mb-4">
+        <input
+          type="text"
+          value={categoryName}
+          onChange={(e) => setCategoryName(e.target.value)}
+          placeholder="Nom de la catégorie"
+          className="border rounded-xl px-2 py-1 flex-grow"
+          />
+        <button
+          onClick={addCategory}
+          className="bg-[#b39625] text-white px-4 py-2 rounded-full"
+          >
+          Créer
+        </button>
+      </div>
     </div>
   );
 }

@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(_request: Request, { params }: { params: { slug: string } }) {
+export async function GET(_request: Request, context: { params: { slug: string } }) {
   try {
+    const { slug } = await context.params; // Attendez explicitement `params`
+
     const apartment = await prisma.apartment.findUnique({
-      where: { slug: params.slug },
+      where: { slug },
     });
 
     if (!apartment) {
