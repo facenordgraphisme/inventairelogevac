@@ -195,11 +195,12 @@ export default function InventoryPage({ params }: { params: Promise<{ slug: stri
         <img src="/assets/logo.png" alt="Logo" className="h-20 w-auto object-contain" />
       </div>
       {apartmentSlug && (
-        <AddCategory
-          apartmentSlug={apartmentSlug}
-          onCategoryAdded={() => fetchCategories(apartmentSlug)}
-          />
-      )}
+  <AddCategory
+    apartmentSlug={apartmentSlug}
+    onCategoryAdded={() => fetchCategories(apartmentSlug)}
+  />
+)}
+
       <ul className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 gap-6">
         {categories.map((category) => (
           <li key={category.id} className="bg-white p-4 rounded shadow">

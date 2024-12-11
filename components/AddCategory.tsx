@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -53,11 +51,11 @@ export function AddCategory({
           onChange={(e) => setCategoryName(e.target.value)}
           placeholder="Nom de la catégorie"
           className="border rounded-xl px-2 py-1 flex-grow"
-          />
+        />
         <button
           onClick={addCategory}
           className="bg-[#b39625] text-white px-4 py-2 rounded-full"
-          >
+        >
           Créer
         </button>
       </div>
