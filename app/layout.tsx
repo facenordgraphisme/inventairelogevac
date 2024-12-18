@@ -26,10 +26,10 @@ export default function RootLayout({
         className={`${dmSans.className} bg-gray-50  min-h-screen text-black antialiased max-w-screen overflow-x-hidden scroll-smooth`}
       >
         <SessionProviderWrapper>
-          <Navbar/>
+          <Navbar />
           {children}
         </SessionProviderWrapper>
-        <Toaster position="bottom-right" duration={3000} />
+        <Toaster position="bottom-right" duration={3000} className="no-print" />
       </body>
     </html>
   );
