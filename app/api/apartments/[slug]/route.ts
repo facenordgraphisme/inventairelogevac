@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(request: Request, context: { params: { slug: string } }) {
-  const { slug } = await context.params; // Assurez-vous d'attendre `params`
+  const { slug } = context.params; // ✅ Correction ici
 
   if (!slug) {
     return NextResponse.json({ error: "Slug is required" }, { status: 400 });
@@ -25,23 +25,22 @@ export async function GET(request: Request, context: { params: { slug: string } 
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { slug: string } }) {
+export async function DELETE(request: Request, context: { params: { slug: string } }) {
   try {
-    const apartmentSlug = params.slug;
+    const { slug } = context.params; // ✅ Correction ici
 
-    if (!apartmentSlug) {
+    if (!slug) {
       return NextResponse.json({ error: "Invalid apartment slug" }, { status: 400 });
     }
 
+    // Vérifier si l'appartement existe
     const apartment = await prisma.apartment.findUnique({
-      where: { slug: apartmentSlug },
+      where: { slug },
       include: {
         inventory: {
           include: {
             categories: {
-              include: {
-                items: true,
-              },
+              include: { items: true },
             },
           },
         },
@@ -69,15 +68,12 @@ export async function DELETE(request: Request, { params }: { params: { slug: str
 
     // Supprime l'appartement
     await prisma.apartment.delete({
-      where: { slug: apartmentSlug },
+      where: { slug },
     });
 
     return NextResponse.json({ message: "Appartement supprimé avec succès." });
   } catch (error) {
     console.error("Error deleting apartment:", error);
-    return NextResponse.json(
-      { error: "Une erreur inattendue s'est produite lors de la suppression." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Une erreur inattendue s'est produite lors de la suppression." }, { status: 500 });
   }
 }

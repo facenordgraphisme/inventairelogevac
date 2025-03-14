@@ -10,6 +10,7 @@ import { toast } from "sonner";
 interface Apartment {
   id: number;
   name: string;
+  type: string; // Ajout du type de logement
   building: {
     name: string;
   };
@@ -23,18 +24,19 @@ export default function InventoryPage({ params }: { params: Promise<{ slug: stri
   const [deletingCategoryId, setDeletingCategoryId] = useState<number | null>(null);
   const [items, setItems] = useState<{ [key: number]: any[] }>({});
   const [showPrintPreview, setShowPrintPreview] = useState(false);
+  const [loadingPrint, setLoadingPrint] = useState(false); // Ajout d'un état pour gérer le chargement de l'impression
   const router = useRouter();
 
-  // Résolvez `params.slug`
+  // Résolution du paramètre slug
   useEffect(() => {
     const resolveParams = async () => {
-      const resolvedParams = await params; // Assurez-vous d'attendre params
+      const resolvedParams = await params;
       setApartmentSlug(resolvedParams.slug);
     };
     resolveParams();
   }, [params]);
 
-  // Chargez les données de l'appartement
+  // Chargement de l'appartement et de l'inventaire
   useEffect(() => {
     if (apartmentSlug) {
       fetchApartment(apartmentSlug);
@@ -71,6 +73,23 @@ export default function InventoryPage({ params }: { params: Promise<{ slug: stri
       setItems((prev) => ({ ...prev, [categoryId]: data || [] }));
     } catch (error) {
       console.error("Error fetching items:", error);
+    }
+  };
+
+  const refreshInventoryBeforePrint = async () => {
+    if (!apartmentSlug) return;
+
+    setLoadingPrint(true);
+    try {
+      await fetchInventory(apartmentSlug); // Rafraîchir les données
+      setTimeout(() => {
+        setShowPrintPreview(true);
+        setLoadingPrint(false);
+      }, 500); // Petit délai pour assurer la mise à jour avant affichage
+    } catch (error) {
+      console.error("Erreur lors du rafraîchissement de l'inventaire :", error);
+      toast.error("Erreur lors du rafraîchissement de l'inventaire.");
+      setLoadingPrint(false);
     }
   };
 
@@ -175,7 +194,7 @@ export default function InventoryPage({ params }: { params: Promise<{ slug: stri
               </button>
               <h1 className="text-3xl font-bold text-center flex-grow mx-4">
                 {apartment
-                  ? `Inventaire du logement ${apartment.name} du bâtiment ${apartment.building.name}`
+                  ? `Inventaire du logement ${apartment.name} (${apartment.type}) du bâtiment ${apartment.building.name}`
                   : "Chargement..."}
               </h1>
               <img src="/assets/logo.png" alt="Logo" className="h-20 w-auto object-contain" />
@@ -191,30 +210,17 @@ export default function InventoryPage({ params }: { params: Promise<{ slug: stri
                 <li key={category.id} className="bg-white p-4 rounded shadow">
                   <div className="flex justify-between items-center pb-4">
                     <h3 className="text-lg font-semibold">{category.name}</h3>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => {
-                          const newName = prompt(
-                            "Entrez le nouveau nom de la catégorie :",
-                            category.name
-                          );
-                          if (newName && newName.trim() !== "") {
-                            updateCategoryName(category.id, newName);
-                          }
-                        }}
-                        className="bg-blue-500 text-white px-3 py-1 rounded-full hover:bg-blue-600 transition duration-300"
-                      >
-                        Modifier
-                      </button>
-                      <button
-                        onClick={() => deleteCategory(category.id)}
-                        className={`bg-white border border-red-600 text-red-600 px-4 py-1 rounded-full hover:bg-red-600 hover:text-white transition duration-300 ease-in-out ${
-                          deletingCategoryId === category.id ? "opacity-50 pointer-events-none" : ""
-                        }`}
-                      >
-                        {deletingCategoryId === category.id ? "Suppression..." : "Supprimer"}
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => deleteCategory(category.id)}
+                      disabled={deletingCategoryId === category.id}
+                      className={`bg-red-500 text-white px-3 py-1 rounded ${
+                        deletingCategoryId === category.id
+                          ? "opacity-50 cursor-not-allowed"
+                          : "hover:bg-red-600"
+                      }`}
+                    >
+                      {deletingCategoryId === category.id ? "Suppression..." : "Supprimer"}
+                    </button>
                   </div>
                   <AddItem
                     categoryId={category.id}
@@ -223,7 +229,7 @@ export default function InventoryPage({ params }: { params: Promise<{ slug: stri
                     onItemsReordered={(updatedItems) => {
                       setItems((prev) => ({
                         ...prev,
-                        [category.id]: updatedItems,
+                        [category.id]: updatedItems, // Met à jour les items réordonnés dans l'état
                       }));
                     }}
                   />
@@ -231,10 +237,11 @@ export default function InventoryPage({ params }: { params: Promise<{ slug: stri
               ))}
             </ul>
             <button
-              onClick={() => setShowPrintPreview(true)}
+              onClick={refreshInventoryBeforePrint}
               className="bg-blue-500 text-white px-4 py-2 rounded mt-6"
+              disabled={loadingPrint}
             >
-              Aperçu avant impression
+              {loadingPrint ? "Chargement..." : "Aperçu avant impression"}
             </button>
           </div>
         )}

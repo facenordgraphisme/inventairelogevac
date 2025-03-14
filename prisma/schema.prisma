@@ -19,7 +19,8 @@ model Building {
 model Apartment {
   id         Int        @id @default(autoincrement())
   name       String
-  slug       String     @unique // Devient obligatoire
+  type       String // Ajout du type de logement (Studio, T2, etc.)
+  slug       String     @unique
   building   Building   @relation(fields: [buildingId], references: [id])
   buildingId Int
   createdAt  DateTime   @default(now())

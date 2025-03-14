@@ -4,35 +4,37 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 export function ApartmentList({
-  apartments,
-  buildingSlug,
-  onApartmentDeleted,
-  onApartmentAdded,
+  apartments, buildingSlug, onApartmentDeleted, onApartmentAdded,
 }: any) {
   const [newApartmentName, setNewApartmentName] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortOption, setSortOption] = useState("number"); // Par défaut : tri par numéro
+  const [sortOption, setSortOption] = useState("number");
+  const [apartmentType, setApartmentType] = useState("Studio");
 
   // Ajouter un appartement
   const addApartment = async () => {
-    try {
-      const response = await fetch(`/api/buildings/${buildingSlug}/apartments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newApartmentName }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to create apartment");
-      }
-
-      setNewApartmentName("");
-      if (onApartmentAdded) onApartmentAdded();
-      toast.success("Logement ajouté avec succès !");
-    } catch (error) {
-      console.error("Error adding apartment:", error);
-      toast.error("Une erreur inattendue s'est produite lors de l'ajout.");
+    if (!newApartmentName || !apartmentType) {
+      toast.error("Le nom et le type de logement sont obligatoires.");
+      return;
     }
+  
+    console.log("Données envoyées :", { name: newApartmentName, type: apartmentType });
+
+    const response = await fetch(`/api/buildings/${buildingSlug}/apartments`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newApartmentName, type: apartmentType }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Erreur API :", errorData);
+      toast.error(errorData.error || "Erreur inconnue");
+      return;
+    }
+
+    toast.success("Logement ajouté avec succès !");
+    onApartmentAdded();
   };
 
   // Supprimer un appartement
@@ -63,7 +65,6 @@ export function ApartmentList({
   // Trier les appartements
   const sortedApartments = [...apartments].sort((a: any, b: any) => {
     if (sortOption === "number") {
-      // Compare les numéros en tant que nombres
       return parseInt(a.name, 10) - parseInt(b.name, 10);
     } else if (sortOption === "createdAt") {
       return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
@@ -78,7 +79,7 @@ export function ApartmentList({
 
   return (
     <div className="space-y-6">
-            {/* Barre de recherche et tri */}
+      {/* Barre de recherche et tri */}
       <p className="text-lg font-semibold">Rechercher un logement</p>
       <div className="flex items-center justify-between gap-4 flex-col sm:flex-row">
         <input
@@ -97,6 +98,7 @@ export function ApartmentList({
           <option value="createdAt">Trier par date de création</option>
         </select>
       </div>
+
       {/* Ajouter un appartement */}
       <p className="text-lg font-semibold">Créer un nouveau logement</p>
       <div className="flex items-center gap-4">
@@ -107,6 +109,14 @@ export function ApartmentList({
           placeholder="Nom du logement"
           className="border rounded-xl px-4 py-2 flex-grow"
         />
+        <select
+          value={apartmentType}
+          onChange={(e) => setApartmentType(e.target.value)}
+          className="border rounded-xl px-4 py-2"
+        >
+          <option value="Studio">Studio</option>
+          <option value="T2">T2</option>
+        </select>
         <button
           onClick={addApartment}
           className="bg-[#b39625] text-white px-4 py-2 rounded-full"
@@ -123,7 +133,11 @@ export function ApartmentList({
               key={apartment.id}
               className="bg-white p-4 rounded shadow-xl flex flex-col justify-between items-center border border-gray-200"
             >
-              <span className="text-lg font-semibold">{apartment.name}</span>
+              {/* Ajout du type de logement */}
+              <span className="text-lg font-semibold">
+                {apartment.name} <span className="text-gray-500 text-sm">({apartment.type})</span>
+              </span>
+              
               <div className="flex gap-2 mt-4">
                 <a
                   href={`/inventory/${apartment.slug}`}
